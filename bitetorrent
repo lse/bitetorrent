@@ -1,0 +1,20 @@
+#!/bin/sh
+
+WORKDIR=/var/run/bitetorrent/
+MOUNTDIR=mount/
+LOOP_DEV=$(losetup | grep 'torrent' | cut -d ' ' -f1)
+TORRENT_URL=$(sed 's|^.*root=live:torrent://\([^ ]*\).*$|http://\1|' /proc/cmdline)
+TORRENT=$(basename "$TORRENT_URL")
+FILENAME=""
+
+function start() {
+	mkdir -p "$WORKDIR/$MOUNTDIR"
+	cd "$WORKDIR"
+	/usr/bin/diskfile "$LOOP_DEV" "$MOUNTDIR"
+	/usr/bin/curl "$TORRENT_URL" -o "$TORRENT"
+	FILENAME=$(ctorrent -x "$TORRENT" | grep '<1>' | cut -d' ' -f2)
+	/usr/bin/ln -fs "$MOUNTDIR/$(basename "$LOOP_DEV")" "$FILENAME"
+	/usr/bin/ctorrent -e-1 -c -f "$TORRENT" >/dev/null
+}
+
+start

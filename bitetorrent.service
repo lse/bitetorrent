@@ -1,0 +1,12 @@
+[Unit]
+Description=Torrent system image
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/bitetorrent
+KillMode=control-group
+Restart=always
+ExecStopPost=/usr/bin/fusermount -u /var/run/bitetorrent/mount
+
+[Install]
+WantedBy=multi-user.target
